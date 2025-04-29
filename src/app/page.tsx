@@ -1,23 +1,26 @@
-import { UserButton } from "@clerk/nextjs";
-import { auth, currentUser } from "@clerk/nextjs/server";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @next/next/no-async-client-component */
+'use client';
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from 'next/navigation';
 
-export default async function HomePage() {
-  const { userId } = await auth();
+export default function HomePage() {
+  const { user, isSignedIn, isLoaded } = useUser();
+  const router = useRouter();
 
-  // Protect the route by checking if the user is signed in
-  if (!userId) {
-    return <div>Sign in to view this page</div>
+  if (!isSignedIn) {
+    return <div>Sign in to view this page</div>;
   }
-
-  // Get the Backend API User object when you need access to the user's information
-  const user = await currentUser()
 
   return (
     <div>
-      <h1>ようこそ、{user?.firstName}さん。</h1>
-      <UserButton
-        afterSignOutUrl="/sign-in"
-      />
+      <h1 className="text-4xl font-bold">ようこそ、{user?.firstName}さん。</h1>
+      <button
+        className="bg-blue-600 text-white px-6 py-2 rounded"
+        onClick={() => router.push('/quiz/1')}
+      >
+        次へ
+      </button>
     </div>
   )
 }
