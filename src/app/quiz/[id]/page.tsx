@@ -12,9 +12,18 @@ export default function QuizPage() {
 
     useEffect(() => {
         if (!quizId) return;
+
         fetch(`/api/quiz/${quizId}`)
-            .then(res => res.json())
-            .then(data => setQuiz(data));
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => setQuiz(data))
+            .catch(err => {
+                console.error("Error fetching quiz:", err);
+            });
     }, [quizId]);
 
     const handleSubmit = async () => {
