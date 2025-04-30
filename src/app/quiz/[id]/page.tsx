@@ -4,26 +4,27 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 
 export default function QuizPage() {
-    const [quiz, setQuiz] = useState<{ question: string } | null>(null);
+    const [quiz, setQuiz] = useState<{
+        choices: string[]; question: string
+    } | null>(null);
     const [answer, setAnswer] = useState('');
     const router = useRouter();
     const params = useParams();
     const quizId = params.id as string;
 
-    useEffect(() => {
-        if (!quizId) return;
+    const fetchQuiz = async (id: string) => {
+        try {
+            const res = await fetch(`/api/quiz/${id}`);
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            const data = await res.json();
+            setQuiz(data);
+        } catch (err) {
+            console.error("Error fetching quiz:", err);
+        }
+    }
 
-        fetch(`/api/quiz/${quizId}`)
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-                return res.json();
-            })
-            .then(data => setQuiz(data))
-            .catch(err => {
-                console.error("Error fetching quiz:", err);
-            });
+    useEffect(() => {
+        if (quizId) fetchQuiz(quizId);
     }, [quizId]);
 
     const handleSubmit = async () => {
@@ -46,12 +47,21 @@ export default function QuizPage() {
     return (
         <div className="p-10">
             <h2 className="text-xl font-semibold mb-4">{quiz.question}</h2>
-            <input
-                className="border px-4 py-2 mr-2"
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder="ここに解答を入力"
-            />
+            {quiz.choices?.map((choice, index) => (
+                <div key={index} className="mb-2">
+                    <label>
+                        <input
+                            type="radio"
+                            name="answer"
+                            value={choice}
+                            checked={answer === choice}
+                            onChange={(e) => setAnswer(e.target.value)}
+                            className="mr-2"
+                        />
+                        {choice}
+                    </label>
+                </div>
+            ))}
             <button
                 className="bg-green-600 text-white px-4 py-2 rounded"
                 onClick={handleSubmit}>
