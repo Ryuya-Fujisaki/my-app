@@ -4,12 +4,21 @@ import { connectDb } from '@/utils/database';
 import { QuizModel } from '@/models/quizModel';
 
 export async function GET(
-    request: NextRequest, 
-    { params }: { params: { id: string } }
-) {
+    request: NextRequest) {
     try { 
     await connectDb();
-    const quiz = await QuizModel.findOne({ quizId: params.id });
+
+    const url = new URL(request.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id) {
+        return new Response(JSON.stringify({ error: "Missing quiz ID" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+
+    const quiz = await QuizModel.findOne({ quizId: id });
 
     if (!quiz) {
         return new Response(JSON.stringify({ error: 'Quiz not found'}), {
