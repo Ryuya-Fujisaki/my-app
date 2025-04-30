@@ -40,7 +40,7 @@ export async function GET(
 }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest) {
     try {
         await connectDb();
         const body = await request.json();
