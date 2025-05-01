@@ -28,10 +28,17 @@ export default function QuizPage() {
     }, [quizId]);
 
     const handleSubmit = async () => {
+        if (!answer) {
+            alert("答えを選んでください");
+            return;
+        }
+
         const res = await fetch(`/api/quiz/${quizId}`, {
             method: 'POST',
-            body: JSON.stringify({ answer }),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ answer })
         });
+
         const result = await res.json();
 
         if (result.correct) {

@@ -43,18 +43,35 @@ export async function GET(
 export async function POST(request: NextRequest) {
     try {
         await connectDb();
-        const body = await request.json();
+        const url = new URL(request.url);
+        const id = url.pathname.split("/").pop();
 
-        const newQuiz = new QuizModel(body);
-        const savedQuiz = await newQuiz.save();
+        if (!id) {
+            return new Response(JSON.stringify({ error: "Missing quiz ID" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" }
+            });
+        }
 
-        return new Response(JSON.stringify(savedQuiz), {
-            status: 201,
-            headers: { 'Content-Type': 'application/json' }
+        const { answer } = await request.json(); //ユーザーの回答を取得
+        const quiz = await QuizModel.findOne({ quizId: id });
+
+        if (!quiz) {
+            return new Response(JSON.stringify({ error: "Quiz not found"}), {
+                status: 404,
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+
+        const correct = quiz.answer.trim() === answer.trim();
+
+        return new Response(JSON.stringify({ correct }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" } 
         });
     } catch (error) {
-        console.error('クイズの保存に失敗:', error);
-        return new Response(JSON.stringify({ error: 'Failed to save quiz' }), {
+        console.error('解答判定に失敗:', error);
+        return new Response(JSON.stringify({ error: 'Failed to check answer' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });
