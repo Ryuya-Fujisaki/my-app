@@ -47,6 +47,10 @@ export default function QuizPage() {
         } else {
             alert('不正解です。もう一度試してください。');
         }
+
+        if (quizId === "10") {
+            router.push('/');
+        }
     };
 
     if (!quiz) return <p>Loading...</p>;
